@@ -1,0 +1,28 @@
+---
+title: Platform Model
+description: Workspaces, users, brands, agents (projects), workflows, files, and posts. The tenancy model behind both API surfaces.
+---
+
+Syvon is a multi-tenant platform. The unit of tenancy is a **workspace**. A **user** (account) is a member of one or more workspaces. A workspace owns:
+
+- **Brands** — the visual identity: palette, fonts, logo.
+- **Projects** (called **agents** on the read surface) — the things that produce content.
+- **Workflows / flows** — the generation pipelines.
+- **Files** — the content on R2 object storage: compositions, designs, media.
+- **Posts** — published feed entries.
+
+## The two client-facing services
+
+- **Portal** (`https://syvon.ai/api/*`) — the management plane. CRUD over workspaces, members, keys, brands, credits. **User-scoped** auth: a portal JWT speaks for one user and reaches every workspace that user belongs to.
+- **Brain** (`https://brain.syvon.ai/v1/agent/*`, `/v1/r2/*`) — the read plane an external wrapper or site uses to render a published agent: its config, file index, items, feed, and public chat. **Workspace-scoped** auth.
+
+## Published vs live
+
+The brain read surface serves the **frozen published release** for an agent, not the live editing tree. An unpublished agent returns defaults and empty lists rather than an error. The one exception is the agent lookup itself: an unknown id, or an agent outside the key's workspace, returns `404`.
+
+## Key scoping, the one trap
+
+- The portal file index returns **workspace-relative** R2 keys.
+- The brain agent surfaces (items, feed, posters) return **agent-scoped** keys, relative to the project's storage prefix.
+
+Stream either back through the brain's R2 proxy (`brain.streamR2File`), which takes a workspace-relative key and only serves allowlisted prefixes (`brands/`, `projects/`, `workflows/`, and friends). See [Media and files](/guides/media-files).

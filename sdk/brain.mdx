@@ -1,0 +1,152 @@
+---
+title: Brain Surface
+description: 'client.brain: the published-agent read plane. Agent metadata, wrap/site config, files, items, feed, R2 streaming, and public chat. Workspace-scoped, needs sk_ws_…'
+---
+
+Credential: **workspace API key** (`sk_ws_...`). Base: `https://brain.syvon.ai`.
+
+This surface serves the **frozen published release** for an agent: the canonical public copy. An unpublished agent returns defaults and empty lists rather than an error. The exception is the agent lookup itself, which returns `404` when the id is unknown or outside the key's workspace.
+
+`agentId` throughout is a **Project id** in the key's workspace. Slugs are not accepted here; resolve slug to id upstream.
+
+## `brain.whoami()` → `WhoAmI`
+
+`GET /v1/agent/_whoami` — smoke test. Confirms the key resolves to a workspace.
+
+```ts
+// { workspaceId: string, apiKeyId: string }
+```
+
+## `brain.getAgent(agentId)` → `AgentMetadata`
+
+`GET /v1/agent/:agentId`.
+
+```ts
+interface AgentMetadata {
+  id: string; slug: string; name: string;
+  brand: { id?: string; slug?: string; name?: string } | string | null;
+  activeWorkflowId: string | null;
+}
+```
+
+## `brain.getWrapConfig(agentId)` → `Record<string, unknown>`
+
+`GET /v1/agent/:agentId/wrap` — the published presentation config (layout, greeting, theme). Unpublished agents return neutral defaults. The parser never throws.
+
+## `brain.getSiteConfig(agentId)` → `Record<string, unknown>`
+
+`GET /v1/agent/:agentId/site` — the published brand-site config (sitemap, nav, sections). An empty `pages` array means "no site published".
+
+## `brain.getFiles(agentId)` → `AgentFileEntry[]`
+
+`GET /v1/agent/:agentId/files` — the frozen workspace file index. Empty for releases that predate indexing.
+
+```ts
+interface AgentFileEntry {
+  key: string; size?: number; mimeType?: string | null;
+}
+```
+
+## `brain.getItems(agentId)` → `AgentItem[]`
+
+`GET /v1/agent/:agentId/items` — the agent's active items.
+
+```ts
+interface AgentItem {
+  id: string; name: string; kind: string; origin?: string | null;
+  r2Key: string;              // agent-scoped (relative to storagePrefix)
+  mimeType: string | null; size: number | null;
+  folder: string | null; order: number | null; updatedAt: string;
+}
+```
+
+## `brain.getSuggestions(agentId)` → `unknown`
+
+`GET /v1/agent/:agentId/suggestions` — workflow starter suggestions. The shape is workflow-defined, so it is typed `unknown` intentionally.
+
+## `brain.getFeed(agentId, query?)` → `FeedPost[]`
+
+`GET /v1/agent/:agentId/feed?channel=&category=` — **published** posts (non-empty channels, not expired). Up to 120, newest first.
+
+```ts
+interface FeedQuery {
+  channel?: string; category?: string;
+}
+
+interface FeedPost {
+  id: string;
+  key: string;                 // agent-scoped cover/primary media r2 key
+  kind: 'still' | 'reel' | 'carousel' | 'story' | 'deck' | string;
+  mediaType: string | null;    // legacy 'image'|'video'; prefer kind
+  title: string | null; sub: string | null; caption: string | null;
+  hashtags: string[]; channels: string[]; category: string | null;
+  width: number | null; height: number | null;
+  createdAt: string;
+  pages: FeedPage[];           // carousel / story pages
+  poster: string;              // video poster frame key
+  playable: string;            // mp4/webm key when a transcode exists
+  isVideo: boolean;
+}
+
+interface FeedPage {
+  key: string; mediaType: string | null;
+  width: number | null; height: number | null; order: number | null;
+}
+```
+
+<Note>
+Keys on this surface are **agent-scoped** (relative to the project's storage prefix), unlike the portal file index which is workspace-relative. Stream them through the R2 proxy below.
+</Note>
+
+## `brain.streamR2File(workspaceRelativeKey)` → `Response`
+
+`GET /v1/r2/:path` — stream a raw workspace R2 object as a fetch `Response`. Pipe `response.body`; do not buffer large objects in memory.
+
+Only allowlisted prefixes are reachable (`brands/`, `projects/`, `workflows/`, ...); others return `403`. The key is **workspace-relative**.
+
+```ts
+const res = await brain.streamR2File('brands/acme/design-tokens.json');
+const tokens = JSON.parse(await res.text());
+```
+
+## `brain.getR2Bytes(key)` → `Uint8Array`
+
+Convenience: buffer the whole object. Small files only.
+
+## `brain.getR2Text(key)` → `string`
+
+Convenience: read an R2 text or JSON file as a string.
+
+## `brain.chat(agentId, request)` → `AsyncIterable<ChatStreamEvent>`
+
+`POST /v1/agent/:agentId/chat` — the public chat stream (NDJSON). Yields one event per line; assemble the reply from `event.text`.
+
+```ts
+interface ChatRequest {
+  prompt: string;
+  client?: string;    // salted visitor hash → per-visitor rate limiting
+  threadKey?: string; // resume a thread
+  history?: { role: 'user' | 'assistant'; content: string }[];
+  section?: string;   // scope to a page/section
+  brandSlug?: string;
+}
+
+interface ChatStreamEvent {
+  type: 'token' | 'delta' | 'done' | 'error' | string;
+  text?: string; content?: string; message?: string;
+}
+```
+
+The agent's **owner is billed** for the turn. Per-visitor spend is capped when `client` is supplied (a salted hash your app mints; never a raw IP). Without it, the whole workspace shares a looser backstop. Rate-limited turns return `429`.
+
+```ts
+let reply = '';
+for await (const ev of brain.chat(agentId, {
+  prompt: 'Tell me about your work.',
+})) {
+  if (ev.type === 'error') throw new Error(ev.message);
+  if (ev.text) reply += ev.text;
+}
+```
+
+See the [chat stream guide](/guides/chat-stream) for threading, MDX rendering, and rate-limit handling.

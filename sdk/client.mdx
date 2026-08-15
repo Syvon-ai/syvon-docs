@@ -1,0 +1,49 @@
+---
+title: The Client
+description: 'new SyvonClient(options): the single entry point. Two surfaces, credential checks before the network, and .with() for token refresh.'
+---
+
+Everything goes through one client instance.
+
+```ts
+import { SyvonClient } from '@syvon/sdk';
+
+const client = new SyvonClient({
+  portalToken: process.env.SYVON_JWT,      // unlocks .portal
+  workspaceKey: process.env.SYVON_WS_KEY,  // unlocks .brain
+});
+```
+
+```ts
+interface SyvonClientOptions {
+  portalToken?: string;     // portal JWT → unlocks .portal
+  workspaceKey?: string;    // sk_ws_… → unlocks .brain
+  portalUrl?: string;       // default 'https://syvon.ai'
+  brainUrl?: string;        // default 'https://brain.syvon.ai'
+  headers?: Record<string, string>;
+  fetchImpl?: typeof fetch; // inject for tests / edge
+}
+```
+
+## Surfaces
+
+- **`client.portal`** — the [portal surface](/sdk/portal): account and workspace management.
+- **`client.brain`** — the [brain surface](/sdk/brain): published agent data and chat.
+
+## Credential helpers
+
+- `client.has('portalToken' | 'workspaceKey')` — was this credential supplied?
+- `client.ensure('portalToken' | 'workspaceKey')` — throw `SyvonConfigError` if not. Called automatically before each request, so a misconfigured client fails before the network, never mid-flight with a confusing 401.
+
+## Swapping credentials: `.with()`
+
+`.with()` returns a **new** client with a credential swapped; the original is unchanged. The intended use is JWT refresh:
+
+```ts
+const newJwt = await refreshJwt();
+const refreshed = client.with({ portalToken: newJwt });
+```
+
+## One instance, many requests
+
+The client holds no per-request state and is safe to share. In a server app, create one per credential set and reuse it.

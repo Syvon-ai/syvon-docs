@@ -1,0 +1,58 @@
+---
+title: Media and Files
+description: Reading R2 media through the brain proxy. Key scoping rules, allowlisted prefixes, streaming vs buffering, and feed media fields.
+---
+
+All binary content (compositions, designs, posters, transcoded video) lives on R2 and is read through the brain's proxy endpoint.
+
+## The one scoping rule
+
+| Source | Key scope |
+|---|---|
+| Portal file index (`portal.listFiles`) | workspace-relative |
+| Brain agent surfaces (`getItems`, `getFeed`, posters, playables) | agent-scoped (relative to the project's storage prefix) |
+
+The proxy (`brain.streamR2File`) always takes a **workspace-relative** key. When you get a key off a feed post or item, it is agent-scoped; resolve it to the workspace-relative form the same way the platform wrapper does (the project's storage prefix plus the key) before streaming, or route through your own resolution step.
+
+Only allowlisted prefixes are reachable (`brands/`, `projects/`, `workflows/`, ...). Everything else returns `403`.
+
+## Stream large objects
+
+```ts
+const res = await client.brain.streamR2File(`projects/${agentId}/output/reel.mp4`);
+
+// pipe to a file
+await pipeline(
+  Readable.fromWeb(res.body as any),
+  createWriteStream('reel.mp4'),
+);
+```
+
+Never buffer a video or a composition export in memory with `getR2Bytes`; that convenience is for small files like `design-tokens.json`.
+
+## Small text/JSON files
+
+```ts
+const tokens = JSON.parse(
+  await client.brain.getR2Text('brands/acme/design-tokens.json'),
+);
+```
+
+## Feed media fields
+
+A `FeedPost` carries everything you need to render it:
+
+- `poster` — still frame key (always present for video)
+- `playable` — mp4/webm key, when a transcode exists
+- `isVideo` — quick branch flag
+- `pages` — ordered media for carousels and story sets
+- `width` / `height` — for layout before the bytes arrive
+- `kind` — `still` | `reel` | `carousel` | `story` | `deck` (prefer this over legacy `mediaType`)
+
+## Serving media to browsers
+
+The proxy is authenticated with the workspace key, so browsers cannot hit it directly. Standard patterns:
+
+- Proxy through your backend, forwarding the key server-side.
+- Fetch on the server and re-serve from your own storage/CDN.
+- Keep the workspace key out of any client bundle. It grants full read of the workspace's published data.

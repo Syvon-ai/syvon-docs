@@ -1,0 +1,45 @@
+---
+title: Introduction
+description: Build on the Syvon platform. Manage your account with the portal surface, read published agents and run chat with the brain surface.
+---
+
+Syvon is a multi-tenant platform for AI-generated brand content. A **workspace** owns brands, agents (projects), workflows, files, and a published feed. If you are building a client, an integration, or an agent that talks to Syvon, these docs are your contract.
+
+There are exactly two client-facing surfaces, each with its own credential:
+
+| Surface | What it does | Credential |
+|---|---|---|
+| **Portal** (`https://syvon.ai/api/*`) | The management plane. Workspaces, members, brands, API keys, credits, flows. | Portal API JWT (user-scoped, ~1 hour) |
+| **Brain** (`https://brain.syvon.ai/v1/*`) | The read plane. Published agent config, items, feed, files, and public chat. | Workspace API key `sk_ws_...` (workspace-scoped) |
+
+A single credential cannot drive both. That is intentional, not an SDK limitation.
+
+The easiest way in is the typed client SDK:
+
+```bash
+npm install @syvon/sdk
+```
+
+```ts
+import { SyvonClient } from '@syvon/sdk';
+
+const client = new SyvonClient({ workspaceKey: process.env.SYVON_WS_KEY! });
+
+for await (const ev of client.brain.chat(agentId, {
+  prompt: 'Tell me about your work.',
+})) {
+  if (ev.text) process.stdout.write(ev.text);
+}
+```
+
+## Who these docs are for
+
+- **Application developers** wiring a Syvon-powered site, feed, or chat into their own product.
+- **Agents and LLMs** building on top of Syvon programmatically. Every method lists its HTTP method + path, parameters, return type, required credential, and the server-side behavior that matters to a caller. This site also serves `llms.txt` and `llms-full.txt` at the root for machine reading.
+- **Internal teams** documenting what the supported client path is (and what deliberately is not exposed; see [Scope](/scope)).
+
+## What you can build
+
+- A website or app that renders a published agent's feed, files, and site config.
+- A chat client that streams an agent's replies (the owner is billed per turn; see [Chat stream](/guides/chat-stream)).
+- Account tooling: workspace and member management, credit balance and history, API key minting.

@@ -1,0 +1,22 @@
+---
+title: Types
+description: Every type exported from the @syvon/sdk package root. The shipped .d.ts files are the authoritative shapes.
+---
+
+All response types are exported from the package root. The authoritative shapes are the `.d.ts` files shipped with the package; this page mirrors them for reading.
+
+## Domain types
+
+`Account`, `Workspace`, `WorkspaceListItem`, `WorkspaceMember`, `UpdateWorkspaceInput`, `CloudBrand`, `ApiKeyMetadata`, `MintedApiKey`, `CreditBalance`, `CreditHistory`, `LedgerEntry`, `WorkflowSummary`, `AgentMetadata`, `WhoAmI`, `AgentFileEntry`, `AgentItem`, `FeedPost`, `FeedPage`, `PostKind`, `ChatRequest`, `ChatStreamEvent`, `PaginatedParams`, `DeleteResult`.
+
+Individual interfaces are documented on their surface pages: [portal](/sdk/portal), [brain](/sdk/brain).
+
+## Low-level HTTP types
+
+For callers who bypass the surfaces and use the HTTP client directly:
+
+`HttpClient`, `RequestOptions`, `RequestResult`, `QueryParams`, `HttpMethod`, `HttpConfig`.
+
+## Errors
+
+`SyvonError`, `SyvonConfigError`, `SyvonRequestError`, `SyvonApiError`. See [Errors](/errors).

@@ -1,0 +1,2647 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Syvon API",
+    "version": "1.0.0",
+    "description": "Two client-facing surfaces: the Portal management plane (syvon.ai/api/*, portal JWT) and the Brain read plane (brain.syvon.ai/v1/*, workspace key sk_ws_…). Schemas are generated from the @syvon/sdk TypeScript types — the shipped .d.ts files are the authoritative contract."
+  },
+  "servers": [
+    {
+      "url": "https://syvon.ai",
+      "description": "Portal (management plane)"
+    },
+    {
+      "url": "https://brain.syvon.ai",
+      "description": "Brain (read plane)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Minting the portal JWT"
+    },
+    {
+      "name": "Portal",
+      "description": "Management plane — user-scoped (portal JWT)"
+    },
+    {
+      "name": "Brain",
+      "description": "Published-agent read plane — workspace-scoped (sk_ws_…)"
+    }
+  ],
+  "paths": {
+    "/api/auth/api-token": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Mint a portal API JWT",
+        "description": "From a signed-in session (magic link / Google / Apple cookie). The JWT is user-scoped and lives ~1 hour; refresh via POST /api/auth/refresh.",
+        "operationId": "mintPortalToken",
+        "responses": {
+          "200": {
+            "description": "The token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "token"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/user/account": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "The authenticated user's account",
+        "description": "",
+        "operationId": "getAccount",
+        "responses": {
+          "200": {
+            "description": "The account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "List the caller's workspaces (membership-scoped)",
+        "description": "",
+        "operationId": "listWorkspaces",
+        "responses": {
+          "200": {
+            "description": "Workspace list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceListItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      },
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Create and activate an empty workspace",
+        "description": "Plan-gated: returns 402 over the plan limit.",
+        "operationId": "createWorkspace",
+        "responses": {
+          "200": {
+            "description": "The new workspace (includes its R2 prefix)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Over the plan workspace limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{id}": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Fetch one workspace (member-only)",
+        "description": "",
+        "operationId": "getWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workspace": {
+                      "$ref": "#/components/schemas/Workspace"
+                    }
+                  },
+                  "required": [
+                    "workspace"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Update workspace name/slug/settings (owner or admin only)",
+        "description": "",
+        "operationId": "updateWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workspace": {
+                      "$ref": "#/components/schemas/Workspace"
+                    }
+                  },
+                  "required": [
+                    "workspace"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceInput"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "PERMANENTLY delete a workspace and all of its R2 content",
+        "description": "",
+        "operationId": "deleteWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/activate": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Set a workspace as the caller's active workspace",
+        "description": "",
+        "operationId": "activateWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activated"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/members": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "List workspace members (member-only)",
+        "description": "",
+        "operationId": "listMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMember"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/brands": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "DB-authoritative brand list",
+        "description": "",
+        "operationId": "listBrands",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Brands",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CloudBrand"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/keys": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "API key metadata for the workspace (raw keys are never returned)",
+        "description": "",
+        "operationId": "listApiKeys",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiKeyMetadata"
+                      }
+                    }
+                  },
+                  "required": [
+                    "keys"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      },
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Mint a workspace API key (owner/admin + multi-workspace plan)",
+        "description": "Returns the raw sk_ws_… key ONCE. 402 with code API_KEYS_NOT_AVAILABLE on a single-workspace plan.",
+        "operationId": "mintApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The minted key (raw key shown once)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "$ref": "#/components/schemas/MintedApiKey"
+                    }
+                  },
+                  "required": [
+                    "key"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "API keys not available on this plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "rateLimit": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{id}/keys/{keyId}": {
+      "delete": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Revoke an API key",
+        "description": "",
+        "operationId": "revokeApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyId",
+            "in": "path",
+            "required": true,
+            "description": "Key id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The revoked key metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/credits/balance": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "The caller's credit balance (1 credit = $0.0001)",
+        "description": "",
+        "operationId": "getCreditBalance",
+        "responses": {
+          "200": {
+            "description": "Balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalance"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/credits/history": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Paginated credit ledger entries",
+        "description": "",
+        "operationId": "getCreditHistory",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Page offset",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by refType (render, voice, llm, topup, …)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/flows": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "List the workspace's workflows / flows",
+        "description": "",
+        "operationId": "listFlows",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowSummary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/files": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "The workspace's file index (workspace-relative R2 keys)",
+        "description": "",
+        "operationId": "listFiles",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Workspace id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "description": "Filter by key prefix",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File index",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "size": {
+                            "type": "number"
+                          },
+                          "mimeType": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "key"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "files"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "servers": [
+          "https://syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/_whoami": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Verify the workspace key resolves",
+        "description": "",
+        "operationId": "whoami",
+        "responses": {
+          "200": {
+            "description": "Which workspace and key this is",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhoAmI"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Published agent metadata",
+        "description": "agentId is a Project id in the key's workspace. Slugs are not accepted. 404 for an unknown id or an agent outside the workspace.",
+        "operationId": "getAgent",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentMetadata"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/wrap": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "The published presentation config (layout, greeting, theme)",
+        "description": "Unpublished agents return neutral defaults. The parser never throws.",
+        "operationId": "getWrapConfig",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wrap config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/site": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "The published brand-site config (sitemap, nav, sections)",
+        "description": "An empty pages array means \"no site published\".",
+        "operationId": "getSiteConfig",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/files": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "The frozen workspace file index for the release",
+        "description": "",
+        "operationId": "getAgentFiles",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentFilesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/items": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "The agent's active items",
+        "description": "",
+        "operationId": "getItems",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/suggestions": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Workflow starter suggestions",
+        "description": "Shape is workflow-defined.",
+        "operationId": "getSuggestions",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Suggestions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/feed": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Published feed posts (newest first, up to 120)",
+        "description": "",
+        "operationId": "getFeed",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "description": "Filter by channel (instagram, site, …)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filter by category",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedPost"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/r2/{path}": {
+      "get": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Stream a raw workspace R2 object",
+        "description": "Workspace-relative key. Only allowlisted prefixes (brands/, projects/, workflows/, …) are reachable; others 403. Pipe the body; do not buffer large objects.",
+        "operationId": "streamR2File",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "Workspace-relative R2 key, e.g. brands/acme/design-tokens.json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The raw object bytes",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Prefix not allowlisted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ]
+      }
+    },
+    "/v1/agent/{agentId}/chat": {
+      "post": {
+        "tags": [
+          "Brain"
+        ],
+        "summary": "Public agent chat (NDJSON stream)",
+        "description": "One JSON event per line; assemble the reply from event.text. The agent owner is billed for the turn. Pass a salted client hash for per-visitor rate limiting (never a raw IP). 429 when rate limited.",
+        "operationId": "chat",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "description": "Project (agent) id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of ChatStreamEvent, one per line",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChatStreamEvent"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited — back off",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "workspaceKeyAuth": []
+          }
+        ],
+        "servers": [
+          "https://brain.syvon.ai"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Portal API JWT (user-scoped, ~1h)"
+      },
+      "workspaceKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Workspace API key (sk_ws_…)"
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "next-auth.session-token",
+        "description": "A signed-in portal session"
+      }
+    },
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "email": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "image": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "description": "",
+            "type": "string"
+          },
+          "workspaceId": {
+            "description": "The user's currently-active workspace id, if any.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "image",
+          "role",
+          "workspaceId"
+        ]
+      },
+      "WorkspaceType": {
+        "type": "string"
+      },
+      "WorkspaceOrigin": {
+        "type": "string"
+      },
+      "MemberRole": {
+        "type": "string"
+      },
+      "WorkspaceListItem": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "type": {
+            "description": "",
+            "$ref": "#/components/schemas/WorkspaceType"
+          },
+          "origin": {
+            "description": "",
+            "$ref": "#/components/schemas/WorkspaceOrigin"
+          },
+          "role": {
+            "description": "",
+            "$ref": "#/components/schemas/MemberRole"
+          },
+          "ownerId": {
+            "description": "",
+            "type": "string"
+          },
+          "memberCount": {
+            "description": "",
+            "type": "number"
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "logoKey": {
+            "description": "Workspace-relative r2 key of the default brand's logo, if any.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "type",
+          "origin",
+          "role",
+          "ownerId",
+          "memberCount",
+          "createdAt",
+          "logoKey"
+        ]
+      },
+      "Workspace": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "type": {
+            "description": "",
+            "$ref": "#/components/schemas/WorkspaceType"
+          },
+          "origin": {
+            "description": "",
+            "$ref": "#/components/schemas/WorkspaceOrigin"
+          },
+          "ownerId": {
+            "description": "",
+            "type": "string"
+          },
+          "storageConfig": {
+            "description": "R2 prefix (`workspaces/<id>/`).",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "",
+                    "type": "string"
+                  },
+                  "bucket": {
+                    "description": "",
+                    "type": "string"
+                  },
+                  "prefix": {
+                    "description": "",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "bucket",
+                  "prefix"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wrapConfig": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {}
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "defaultWorkflowId": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "defaultBrandId": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "listed": {
+            "description": "",
+            "type": "boolean"
+          },
+          "storeConversations": {
+            "description": "",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "type",
+          "origin",
+          "ownerId",
+          "createdAt"
+        ]
+      },
+      "WorkspaceMember": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "userId": {
+            "description": "",
+            "type": "string"
+          },
+          "workspaceId": {
+            "description": "",
+            "type": "string"
+          },
+          "role": {
+            "description": "",
+            "$ref": "#/components/schemas/MemberRole"
+          },
+          "email": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "image": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "workspaceId",
+          "role",
+          "email",
+          "name",
+          "image",
+          "createdAt"
+        ]
+      },
+      "UpdateWorkspaceInput": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "listed": {
+            "description": "",
+            "type": "boolean"
+          },
+          "storeConversations": {
+            "description": "",
+            "type": "boolean"
+          },
+          "defaultWorkflowId": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wrapConfig": {
+            "description": "Partial merge — only a whitelisted set of keys is accepted.",
+            "type": "object",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "ApiKeyMetadata": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "12-char display prefix (e.g. `sk_ws_abcdef`).",
+            "type": "string"
+          },
+          "rateLimit": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastUsedAt": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "revokedAt": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "rateLimit",
+          "lastUsedAt",
+          "createdAt",
+          "revokedAt"
+        ]
+      },
+      "MintedApiKey": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiKeyMetadata"
+          },
+          {
+            "type": "object",
+            "description": "",
+            "properties": {
+              "key": {
+                "description": "The raw key. Returned ONCE at mint time — capture or lose it.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key"
+            ]
+          }
+        ]
+      },
+      "CloudBrand": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "isDefault": {
+            "description": "",
+            "type": "boolean"
+          },
+          "palette": {
+            "description": "Best-effort palette extracted from `Brand.visual`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fontFamily": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "isDefault",
+          "palette",
+          "fontFamily"
+        ]
+      },
+      "CreditBalance": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "balance": {
+            "description": "",
+            "type": "object",
+            "properties": {
+              "available": {
+                "description": "",
+                "type": "number"
+              },
+              "held": {
+                "description": "",
+                "type": "number"
+              },
+              "total": {
+                "description": "",
+                "type": "number"
+              }
+            },
+            "required": [
+              "available",
+              "held",
+              "total"
+            ]
+          },
+          "unit": {
+            "description": "",
+            "type": "string",
+            "enum": [
+              "credits"
+            ]
+          },
+          "usdCents": {
+            "description": "",
+            "type": "object",
+            "properties": {
+              "available": {
+                "description": "",
+                "type": "number"
+              },
+              "held": {
+                "description": "",
+                "type": "number"
+              },
+              "total": {
+                "description": "",
+                "type": "number"
+              }
+            },
+            "required": [
+              "available",
+              "held",
+              "total"
+            ]
+          }
+        },
+        "required": [
+          "balance",
+          "unit",
+          "usdCents"
+        ]
+      },
+      "LedgerEntry": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "accountId": {
+            "description": "",
+            "type": "string"
+          },
+          "amountCredits": {
+            "description": "",
+            "type": "number"
+          },
+          "refType": {
+            "description": "",
+            "type": "string"
+          },
+          "refId": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "accountId",
+          "amountCredits",
+          "refType",
+          "refId",
+          "description",
+          "createdAt"
+        ],
+        "additionalProperties": true
+      },
+      "CreditHistory": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "entries": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LedgerEntry"
+            }
+          },
+          "total": {
+            "description": "",
+            "type": "number"
+          },
+          "limit": {
+            "description": "",
+            "type": "number"
+          },
+          "offset": {
+            "description": "",
+            "type": "number"
+          }
+        },
+        "required": [
+          "entries",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "WorkflowSummary": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "description": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "icon": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "folder": {
+            "description": "R2 folder path (`workflows/<slug>/`).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "createdAt"
+        ]
+      },
+      "AgentMetadata": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "slug": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "brand": {
+            "description": "",
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "description": "",
+                        "type": "string"
+                      },
+                      "slug": {
+                        "description": "",
+                        "type": "string"
+                      },
+                      "name": {
+                        "description": "",
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activeWorkflowId": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "brand",
+          "activeWorkflowId"
+        ]
+      },
+      "WhoAmI": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "workspaceId": {
+            "description": "",
+            "type": "string"
+          },
+          "apiKeyId": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "apiKeyId"
+        ]
+      },
+      "AgentFileEntry": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "key": {
+            "description": "Workspace-relative r2 key.",
+            "type": "string"
+          },
+          "size": {
+            "description": "",
+            "type": "number"
+          },
+          "mimeType": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "AgentFilesResponse": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "files": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentFileEntry"
+            }
+          }
+        },
+        "required": [
+          "files"
+        ]
+      },
+      "AgentItem": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "kind": {
+            "description": "",
+            "type": "string"
+          },
+          "origin": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "r2Key": {
+            "description": "Agent-scoped r2 key (relative to the project's storagePrefix).",
+            "type": "string"
+          },
+          "mimeType": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "size": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "folder": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "r2Key",
+          "mimeType",
+          "size",
+          "folder",
+          "order",
+          "updatedAt"
+        ]
+      },
+      "PostKind": {
+        "type": "string"
+      },
+      "FeedPage": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "key": {
+            "description": "",
+            "type": "string"
+          },
+          "mediaType": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "width": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "mediaType",
+          "width",
+          "height",
+          "order"
+        ]
+      },
+      "FeedPost": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "id": {
+            "description": "",
+            "type": "string"
+          },
+          "key": {
+            "description": "Agent-scoped r2 key of the cover/primary media.",
+            "type": "string"
+          },
+          "kind": {
+            "description": "",
+            "$ref": "#/components/schemas/PostKind"
+          },
+          "mediaType": {
+            "description": "Legacy discriminator (\"image\" | \"video\"); prefer `kind`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sub": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caption": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hashtags": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "channels": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "width": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "description": "",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "description": "",
+            "type": "string"
+          },
+          "pages": {
+            "description": "Carousel / story pages.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedPage"
+            }
+          },
+          "poster": {
+            "description": "Poster frame key for video.",
+            "type": "string"
+          },
+          "playable": {
+            "description": "MP4/webm key when a transcode exists.",
+            "type": "string"
+          },
+          "isVideo": {
+            "description": "",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "kind",
+          "mediaType",
+          "title",
+          "sub",
+          "caption",
+          "hashtags",
+          "channels",
+          "category",
+          "width",
+          "height",
+          "createdAt",
+          "pages",
+          "poster",
+          "playable",
+          "isVideo"
+        ]
+      },
+      "ChatRequest": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "prompt": {
+            "description": "",
+            "type": "string"
+          },
+          "client": {
+            "description": "Salty hash identifying the visitor (for per-visitor rate limiting).",
+            "type": "string"
+          },
+          "threadKey": {
+            "description": "Conversation thread id (resumes a thread server-side).",
+            "type": "string"
+          },
+          "history": {
+            "description": "Preceding turns, oldest first.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "description": "",
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "description": "",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            }
+          },
+          "section": {
+            "description": "A page/section id the wrapper scopes the answer to.",
+            "type": "string"
+          },
+          "brandSlug": {
+            "description": "Brand slug override.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "ChatStreamEvent": {
+        "type": "object",
+        "description": "A single line from the NDJSON chat stream. Discriminated by `type`.",
+        "properties": {
+          "type": {
+            "description": "",
+            "type": "string"
+          },
+          "text": {
+            "description": "Text fragment (for token/delta events).",
+            "type": "string"
+          },
+          "content": {
+            "description": "Full accumulated text on completion (some events).",
+            "type": "string"
+          },
+          "message": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "additionalProperties": true
+      },
+      "PaginatedParams": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "limit": {
+            "description": "",
+            "type": "number"
+          },
+          "offset": {
+            "description": "",
+            "type": "number"
+          }
+        }
+      },
+      "DeleteResult": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "deleted": {
+            "description": "",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      }
+    }
+  },
+  "x-generated-from": "packages/sdk/src/types.ts"
+}

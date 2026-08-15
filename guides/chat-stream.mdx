@@ -1,0 +1,46 @@
+---
+title: Chat Stream
+description: Consume the agent chat endpoint. NDJSON events, MDX replies, threading, per-visitor rate limiting, and billing behavior.
+---
+
+Agent chat is a POST that returns an **NDJSON stream**: one JSON event per line. The SDK yields each parsed event as a `ChatStreamEvent`.
+
+## Assemble the reply
+
+```ts
+let reply = '';
+for await (const ev of client.brain.chat(agentId, {
+  prompt: 'What do you make?',
+})) {
+  if (ev.type === 'error') throw new Error(ev.message);
+  if (ev.text) reply += ev.text;
+}
+```
+
+The assembled reply is **MDX**: paragraphs, headings, and occasional embedded components. Render it with an MDX-capable renderer; do not treat it as plain text.
+
+## Threading
+
+Pass `threadKey` to resume a thread and `history` to supply prior turns explicitly:
+
+```ts
+const events = client.brain.chat(agentId, {
+  prompt: 'More detail on the second one',
+  threadKey: threadKeyFromEarlierTurn,
+  history: [
+    { role: 'user', content: 'List your services' },
+    { role: 'assistant', content: earlierReply },
+  ],
+});
+```
+
+## Scoping
+
+`section` scopes the turn to a page or section of the agent's site (useful for contextual chat on a specific page). `brandSlug` selects among a multi-brand agent's brands.
+
+## Rate limiting and billing
+
+- The agent's **owner is billed** for every completed turn. Your integration is spending someone else's credits; keep that in mind before auto-firing prompts.
+- Pass `client`, a **salted visitor hash your app mints** (never a raw IP or email), to get per-visitor caps.
+- Without `client`, the whole workspace shares a looser backstop.
+- A rate-limited turn returns `429`. Back off and retry; do not retry-loop against it.

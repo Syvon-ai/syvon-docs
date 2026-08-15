@@ -1,0 +1,67 @@
+---
+title: Authentication
+description: Two credentials, two surfaces. A portal API JWT for the management plane and a workspace API key for the read plane. One key never drives both.
+---
+
+Syvon exposes two client-facing surfaces, each with its own credential. A JWT will not work on the brain surface, and a workspace key will not work on the portal surface. Pass both to the client if you need both planes.
+
+## Portal API JWT
+
+The credential for the management plane (workspaces, members, keys, brands, credits, flows).
+
+- **Scope:** one user, and every workspace they are a member of.
+- **Header:** `Authorization: Bearer <jwt>`.
+- **Lifetime:** about 1 hour.
+- **Format:** HS256 JWT. Issuer `syvon-portal`, audience `syvon-api`, `sub` = userId.
+
+### Mint one
+
+From a signed-in session (magic link / Google / Apple cookie):
+
+```
+POST https://syvon.ai/api/auth/api-token
+```
+
+The response is `{ "token": "..." }`. Refresh before expiry via `POST /api/auth/refresh`. This is the credential for any "manage my account" flow.
+
+## Workspace API key
+
+The credential for the brain read plane (published agents, feed, files, chat).
+
+- **Scope:** exactly one workspace. Full read of that workspace's published data plus agent chat. No roles, no finer scope.
+- **Header:** `Authorization: Bearer sk_ws_...`.
+- **Lifetime:** until revoked.
+- **Storage:** the server stores only a SHA-256 hash. The raw key is shown **once**, at mint time.
+
+### Mint one
+
+```
+POST /api/workspaces/:id/keys
+```
+
+Requires workspace owner/admin and a multi-workspace plan; otherwise the call returns `402` with code `API_KEYS_NOT_AVAILABLE`. Body: `{ "name": string, "rateLimit"?: number }`. The response includes the raw `key` alongside its metadata.
+
+### Verify and revoke
+
+The brain hashes the bearer and looks it up. An unknown or revoked key returns a deliberately vague `401`. Revoke with `DELETE /api/workspaces/:id/keys/:keyId`.
+
+## Which credential do I need?
+
+| You want to... | Credential |
+|---|---|
+| List/manage your workspaces, members, brands | Portal JWT |
+| Mint or revoke API keys | Portal JWT (owner/admin) |
+| Read credit balance and history | Portal JWT |
+| Read a published agent's config, feed, items | Workspace key |
+| Stream R2 media (compositions, posters, mp4s) | Workspace key |
+| Run public chat against an agent | Workspace key |
+
+## Handling expiry
+
+The portal JWT is short-lived. Refresh it and hand the new token to the SDK without rebuilding state:
+
+```ts
+const refreshed = client.with({ portalToken: newJwt });
+```
+
+`.with()` returns a new client; the original is unchanged. See [The client](/sdk/client).

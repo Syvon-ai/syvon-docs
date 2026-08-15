@@ -1,0 +1,41 @@
+---
+title: Errors
+description: Every SDK error class, what it means, and the HTTP statuses you should handle. Failures are typed before they reach your catch block.
+---
+
+All SDK errors extend `SyvonError`.
+
+| Class | When | Notable fields |
+|---|---|---|
+| `SyvonConfigError` | Missing credential or bad config. Thrown before any network call. | |
+| `SyvonRequestError` | Transport failure (DNS, offline, abort). | `.cause` |
+| `SyvonApiError` | Non-2xx HTTP response. | `.status`, `.body`, `.raw`, `.isAuthError`, `.isRateLimited`, `.isNotFound` |
+
+`SyvonApiError.body` is the parsed JSON when the server returned JSON (most routes do), exposing the server's `error` / `code` / `message` fields.
+
+## Statuses you should handle
+
+- **401** — token missing, invalid, or expired. Refresh the portal JWT, or the workspace key is wrong/revoked.
+- **402** — plan-gated operation. For example minting a key on a single-workspace plan (`API_KEYS_NOT_AVAILABLE`).
+- **403** — authenticated but not allowed. Not an owner, not a member, or an R2 prefix the proxy does not allowlist.
+- **404** — wrong id, or the resource is not published yet (brain read surface).
+- **429** — rate limited. Back off and retry.
+
+## Example
+
+```ts
+import { SyvonApiError } from '@syvon/sdk';
+
+try {
+  await client.brain.getFeed(agentId);
+} catch (err) {
+  if (err instanceof SyvonApiError && err.isAuthError) {
+    // key revoked or wrong workspace
+  }
+  throw err;
+}
+```
+
+## Rate limiting
+
+The chat endpoint applies per-visitor caps when the request carries a `client` hash (a salted hash your app mints; never a raw IP). Without it, the whole workspace shares a looser backstop. A rate-limited turn returns `429`; wait and retry.

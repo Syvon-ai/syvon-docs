@@ -1,0 +1,192 @@
+---
+title: Portal Surface
+description: 'client.portal: account, workspaces, members, brands, API keys, credits, flows, and the file index. User-scoped, needs the portal JWT.'
+---
+
+Credential: **portal JWT**. Base: `https://syvon.ai/api/*`.
+
+## Account
+
+### `portal.account()` → `Account`
+
+`GET /api/user/account` — the authenticated user.
+
+```ts
+interface Account {
+  id: string;
+  email: string | null;
+  name: string | null;
+  image: string | null;
+  role: 'user' | 'admin' | string;
+  workspaceId: string | null;   // currently-active workspace
+  createdAt?: string;
+}
+```
+
+## Workspaces
+
+### `portal.listWorkspaces()` → `WorkspaceListItem[]`
+
+`GET /api/workspaces` — membership-scoped. Non-enterprise users see only their active workspace; the synthetic `catalog` workspace is surfaced to admins.
+
+```ts
+interface WorkspaceListItem {
+  id: string; name: string; slug: string;
+  type: 'builder' | 'catalog' | string;
+  origin: 'app' | 'import' | string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer' | string;
+  ownerId: string; memberCount: number; createdAt: string;
+  logoKey: string | null;   // ws-relative r2 key of default brand logo
+}
+```
+
+### `portal.getWorkspace(id)` → `Workspace`
+
+`GET /api/workspaces/:id` — must be a member. The server returns `{ workspace }`; the SDK unwraps it.
+
+### `portal.createWorkspace(name)` → creation result
+
+`POST /api/workspaces` — create and activate an empty workspace. **Plan-gated**: `402` over limit. Body `{ name }`. Returns the new workspace including its `prefix`.
+
+### `portal.updateWorkspace(id, input)` → `Workspace`
+
+`PATCH /api/workspaces/:id` — **owner/admin only**.
+
+```ts
+interface UpdateWorkspaceInput {
+  name?: string;
+  slug?: string;                 // sanitized, must be globally unique
+  listed?: boolean;              // opt into the public directory
+  storeConversations?: boolean;  // opt into storing visitor chat transcripts
+  defaultWorkflowId?: string | null;
+  wrapConfig?: Record<string, unknown>;  // partial merge; whitelisted keys only
+}
+```
+
+### `portal.deleteWorkspace(id)` → `{ deleted: boolean }`
+
+`DELETE /api/workspaces/:id` — **owner/admin only**. **Permanent**: deletes every R2 object under the workspace prefix and all database rows. There is no undo.
+
+### `portal.activateWorkspace(id)` → `unknown`
+
+`POST /api/workspaces/:id/activate` — set as the caller's active workspace.
+
+## Members
+
+### `portal.listMembers(workspaceId)` → `WorkspaceMember[]`
+
+`GET /api/workspaces/:id/members` — must be a member. User details (email, name, image) are joined from the core database.
+
+```ts
+interface WorkspaceMember {
+  id: string; userId: string; workspaceId: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer' | string;
+  email: string | null; name: string | null; image: string | null;
+  createdAt: string;
+}
+```
+
+## Brands
+
+### `portal.listBrands(workspaceId)` → `CloudBrand[]`
+
+`GET /api/workspaces/:id/brands` — database-authoritative brand list. `palette` and `fontFamily` are best-effort reads of the free-form brand visual JSON.
+
+```ts
+interface CloudBrand {
+  id: string; slug: string; name: string; isDefault: boolean;
+  palette: string[]; fontFamily: string | null;
+  createdAt?: string; updatedAt?: string;
+}
+```
+
+## API keys
+
+### `portal.listApiKeys(workspaceId)` → `ApiKeyMetadata[]`
+
+`GET /api/workspaces/:id/keys` — metadata only. Raw keys are never returned.
+
+```ts
+interface ApiKeyMetadata {
+  id: string; name: string;
+  prefix: string;           // 'sk_ws_' + 12 chars
+  rateLimit: number | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  revokedAt: string | null;
+}
+```
+
+### `portal.mintApiKey(workspaceId, { name, rateLimit? })` → `MintedApiKey`
+
+`POST /api/workspaces/:id/keys` — **owner/admin plus a multi-workspace plan** (otherwise `402`, code `API_KEYS_NOT_AVAILABLE`). Returns the raw `key` **once**.
+
+```ts
+interface MintedApiKey extends ApiKeyMetadata {
+  key: string; // 'sk_ws_…'
+}
+```
+
+### `portal.revokeApiKey(workspaceId, keyId)` → `unknown`
+
+`DELETE /api/workspaces/:id/keys/:keyId` — revoke a key.
+
+## Credits
+
+1 credit = $0.0001. Credits fund AI generation (renders, voice, LLM) across the platform. The balance is per **account**, not per workspace.
+
+### `portal.creditBalance()` → `CreditBalance`
+
+`GET /api/credits/balance`.
+
+```ts
+interface CreditBalance {
+  balance: { available: number; held: number; total: number };
+  unit: 'credits';
+  usdCents: { available: number; held: number; total: number };
+}
+```
+
+`held` = credits locked by in-flight operations. `available` = `total - held`.
+
+### `portal.creditHistory(params?)` → `CreditHistory`
+
+`GET /api/credits/history?limit=&offset=&type=`.
+
+```ts
+interface CreditHistoryParams {
+  limit?: number; offset?: number; type?: string;
+}
+
+interface CreditHistory {
+  entries: LedgerEntry[]; total: number; limit: number; offset: number;
+}
+
+interface LedgerEntry {
+  id: string; accountId: string; amountCredits: number;
+  refType: string; refId: string | null;
+  description: string | null; createdAt: string;
+}
+```
+
+`amountCredits` is signed: positive = grant or top-up, negative = spend. `refType` is the spend category (`render`, `voice`, `llm`, `topup`, ...).
+
+## Workflows / flows
+
+### `portal.listFlows(workspaceId)` → `WorkflowSummary[]`
+
+`GET /api/workspaces/:id/flows`.
+
+```ts
+interface WorkflowSummary {
+  id: string; slug: string; name: string;
+  description?: string | null; icon?: string | null;
+  folder?: string; createdAt: string; updatedAt?: string;
+}
+```
+
+## Files
+
+### `portal.listFiles(workspaceId, prefix?)` → `{ key, size?, mimeType? }[]`
+
+`GET /api/workspaces/:id/files?prefix=` — the workspace's file index, with workspace-relative R2 keys. To read a file's bytes, use [`brain.streamR2File`](/sdk/brain#streamr2file).

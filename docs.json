@@ -1,0 +1,75 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Syvon",
+  "theme": "mint",
+  "colors": {
+    "primary": "#FD5E40",
+    "light": "#FD8A73",
+    "dark": "#C2410C"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "languages": [],
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication",
+              "errors"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "platform-model",
+              "scope"
+            ]
+          },
+          {
+            "group": "Client SDK",
+            "pages": [
+              "sdk/installation",
+              "sdk/client",
+              "sdk/portal",
+              "sdk/brain",
+              "sdk/types"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              {
+                "group": "Auth",
+                "pages": [{ "source": "./openapi.json", "section": "Auth" }]
+              },
+              {
+                "group": "Portal",
+                "pages": [{ "source": "./openapi.json", "section": "Portal" }]
+              },
+              {
+                "group": "Brain",
+                "pages": [{ "source": "./openapi.json", "section": "Brain" }]
+              }
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/chat-stream",
+              "guides/media-files"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footerSocials": {
+    "x": "https://x.com/syvon",
+    "website": "https://syvon.ai"
+  }
+}

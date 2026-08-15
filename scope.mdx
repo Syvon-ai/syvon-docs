@@ -1,0 +1,24 @@
+---
+title: Scope and Limits
+description: What the client API deliberately does not expose, and the supported path for generation and rendering from a client.
+---
+
+These capabilities exist on the platform but are service-to-service and are not wrapped by the SDK, to keep the client surface safe:
+
+- **Brain `/v1/internal/*`** — workflow execution, generation, LLM/image/video/voice egress. Requires the shared internal service key.
+- **Render service** — stage, still, and sequence rendering, simulation, audio extraction. Requires a service token.
+- **File write/sync transport** (`POST`/`DELETE`/`PATCH` on workspace files) and reconcile/publish — these mutate R2 and the manifest and are reserved for authorized tooling.
+
+## The supported client path for generation
+
+If you need generation or rendering from a client, run it through an **agent** (project) on the platform, and read the result back via the brain feed and files surface:
+
+1. The agent's workflow generates content on the platform (billed to the workspace).
+2. Publish promotes it to the frozen release.
+3. Your client reads it: `brain.getFeed`, `brain.getItems`, `brain.streamR2File`.
+
+There is no client-side "run a render" verb, by design.
+
+## Reading data you do not own
+
+A workspace key reads exactly one workspace's published data. There is no cross-workspace read, no listing of other workspaces, and no member data on the brain surface. To read another account's data, that account mints a key and hands it to you.

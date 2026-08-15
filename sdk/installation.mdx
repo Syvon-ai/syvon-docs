@@ -1,0 +1,38 @@
+---
+title: Installation
+description: Install the typed Syvon client SDK. Zero runtime dependencies, runs on Node 18+, browsers, Deno, Bun, and Cloudflare Workers.
+---
+
+```bash
+npm install @syvon/sdk
+```
+
+Or with pnpm / yarn / bun:
+
+```bash
+pnpm add @syvon/sdk
+```
+
+## Requirements
+
+- A `fetch` implementation. Node 18+, all modern browsers, Deno, Bun, and Cloudflare Workers ship one. On older Node, pass a polyfill via `fetchImpl`.
+- One or both credentials, depending on which surfaces you use (see [Authentication](/authentication)).
+
+## Verify
+
+```ts
+import { SyvonClient } from '@syvon/sdk';
+
+const client = new SyvonClient({ workspaceKey: process.env.SYVON_WS_KEY! });
+console.log(await client.brain.whoami());
+```
+
+## TypeScript
+
+The package ships its own `.d.ts` types. All response types are exported from the package root, so you can type your own state directly:
+
+```ts
+import type { FeedPost, AgentItem } from '@syvon/sdk';
+```
+
+See [Types](/sdk/types) for the full export list.

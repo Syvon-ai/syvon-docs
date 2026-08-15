@@ -1,0 +1,75 @@
+---
+title: Quickstart
+description: From zero to your first Syvon API call in a few minutes. Mint a workspace key, install the SDK, and stream an agent chat reply.
+---
+
+This guide gets you to a working call against live data.
+
+## 1. Get a workspace API key
+
+The brain surface (published agents, feed, chat) authenticates with a workspace key:
+
+1. Sign in to Syvon (magic link, Google, or Apple).
+2. As a workspace owner on a multi-workspace plan, mint a key:
+
+```bash
+curl -X POST https://syvon.ai/api/workspaces/<WORKSPACE_ID>/keys \
+  -H "Authorization: Bearer <PORTAL_JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "my-integration" }'
+```
+
+The response contains the raw `sk_ws_...` key **once**. Store it now; the server keeps only a hash. See [Authentication](/authentication) for how to get the portal JWT and what to do if you are on a single-workspace plan (402, code `API_KEYS_NOT_AVAILABLE`).
+
+## 2. Install the SDK
+
+```bash
+npm install @syvon/sdk
+```
+
+Zero runtime dependencies; uses the platform `fetch` (Node 18+, browsers, Deno, Bun, Cloudflare Workers).
+
+## 3. First call: verify the key
+
+```ts
+import { SyvonClient } from '@syvon/sdk';
+
+const client = new SyvonClient({ workspaceKey: process.env.SYVON_WS_KEY! });
+
+const me = await client.brain.whoami();
+console.log(me); // { workspaceId: '...', apiKeyId: '...' }
+```
+
+## 4. Read a published agent
+
+```ts
+const agent = await client.brain.getAgent(AGENT_ID);
+const feed = await client.brain.getFeed(AGENT_ID);
+
+for (const post of feed) {
+  console.log(post.kind, post.title);
+}
+```
+
+`agentId` is a Project id in the key's workspace. Slugs are not accepted on this surface.
+
+## 5. Stream a chat reply
+
+```ts
+let reply = '';
+for await (const ev of client.brain.chat(AGENT_ID, {
+  prompt: 'What do you make?',
+})) {
+  if (ev.type === 'error') throw new Error(ev.message);
+  if (ev.text) reply += ev.text;
+}
+console.log(reply);
+```
+
+Replies arrive as MDX over an NDJSON stream. The agent's owner is billed for the turn; pass a salted `client` hash per visitor to get per-visitor rate limiting. See [Chat stream](/guides/chat-stream).
+
+## Where to go next
+
+- [Authentication](/authentication) covers both credentials in depth.
+- [Portal surface](/sdk/portal) for account and workspace management.
+- [Brain surface](/sdk/brain) for the full read plane.
