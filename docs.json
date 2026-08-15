@@ -43,42 +43,42 @@
       },
       {
         "group": "API Reference — Auth",
-        "pages": ["openapi/mintPortalToken"]
+        "pages": ["POST /api/auth/api-token"]
       },
       {
         "group": "API Reference — Portal",
         "pages": [
-          "openapi/getAccount",
-          "openapi/listWorkspaces",
-          "openapi/createWorkspace",
-          "openapi/getWorkspace",
-          "openapi/updateWorkspace",
-          "openapi/deleteWorkspace",
-          "openapi/activateWorkspace",
-          "openapi/listMembers",
-          "openapi/listBrands",
-          "openapi/listApiKeys",
-          "openapi/mintApiKey",
-          "openapi/revokeApiKey",
-          "openapi/getCreditBalance",
-          "openapi/getCreditHistory",
-          "openapi/listFlows",
-          "openapi/listFiles"
+          "GET /api/user/account",
+          "GET /api/workspaces",
+          "POST /api/workspaces",
+          "GET /api/workspaces/{id}",
+          "PATCH /api/workspaces/{id}",
+          "DELETE /api/workspaces/{id}",
+          "POST /api/workspaces/{id}/activate",
+          "GET /api/workspaces/{id}/members",
+          "GET /api/workspaces/{id}/brands",
+          "GET /api/workspaces/{id}/keys",
+          "POST /api/workspaces/{id}/keys",
+          "DELETE /api/workspaces/{id}/keys/{keyId}",
+          "GET /api/credits/balance",
+          "GET /api/credits/history",
+          "GET /api/workspaces/{id}/flows",
+          "GET /api/workspaces/{id}/files"
         ]
       },
       {
         "group": "API Reference — Brain",
         "pages": [
-          "openapi/whoami",
-          "openapi/getAgent",
-          "openapi/getWrapConfig",
-          "openapi/getSiteConfig",
-          "openapi/getAgentFiles",
-          "openapi/getItems",
-          "openapi/getSuggestions",
-          "openapi/getFeed",
-          "openapi/streamR2File",
-          "openapi/chat"
+          "GET /v1/agent/_whoami",
+          "GET /v1/agent/{agentId}",
+          "GET /v1/agent/{agentId}/wrap",
+          "GET /v1/agent/{agentId}/site",
+          "GET /v1/agent/{agentId}/files",
+          "GET /v1/agent/{agentId}/items",
+          "GET /v1/agent/{agentId}/suggestions",
+          "GET /v1/agent/{agentId}/feed",
+          "GET /v1/r2/{path}",
+          "POST /v1/agent/{agentId}/chat"
         ]
       },
       {
