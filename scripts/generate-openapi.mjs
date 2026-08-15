@@ -537,7 +537,7 @@ for (const r of routes) {
     responses: r.responses,
   };
   if (r.security) op.security = r.security;
-  if (r.servers) op.servers = r.servers;
+  if (r.servers) op.servers = r.servers.map((u) => ({ url: u }));
   if (r.body) {
     op.requestBody = {
       required: true,

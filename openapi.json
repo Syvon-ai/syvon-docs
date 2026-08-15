@@ -64,7 +64,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -94,7 +96,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -127,7 +131,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       },
       "post": {
@@ -174,7 +180,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ],
         "requestBody": {
           "required": true,
@@ -241,7 +249,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       },
       "patch": {
@@ -288,7 +298,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ],
         "requestBody": {
           "required": true,
@@ -337,7 +349,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -371,7 +385,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -415,7 +431,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -459,7 +477,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -511,7 +531,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       },
       "post": {
@@ -576,7 +598,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ],
         "requestBody": {
           "required": true,
@@ -648,7 +672,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -678,7 +704,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -737,7 +765,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -781,7 +811,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -856,7 +888,9 @@
           }
         ],
         "servers": [
-          "https://syvon.ai"
+          {
+            "url": "https://syvon.ai"
+          }
         ]
       }
     },
@@ -886,7 +920,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -945,7 +981,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -987,7 +1025,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1029,7 +1069,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1070,7 +1112,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1114,7 +1158,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1156,7 +1202,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1218,7 +1266,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1278,7 +1328,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ]
       }
     },
@@ -1340,7 +1392,9 @@
           }
         ],
         "servers": [
-          "https://brain.syvon.ai"
+          {
+            "url": "https://brain.syvon.ai"
+          }
         ],
         "requestBody": {
           "required": true,
