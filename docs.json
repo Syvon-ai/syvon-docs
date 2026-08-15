@@ -1,6 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Syvon",
+  "description": "The Syvon platform API — manage workspaces, brands, and credits on the portal surface; read published agents, feeds, media, and run chat on the brain surface. Typed client SDK for @syvon/sdk.",
   "theme": "mint",
   "colors": {
     "primary": "#FD5E40",
@@ -9,60 +10,50 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "pages": [
       {
-        "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "authentication",
-              "errors"
-            ]
-          },
-          {
-            "group": "Platform",
-            "pages": [
-              "platform-model",
-              "scope"
-            ]
-          },
-          {
-            "group": "Client SDK",
-            "pages": [
-              "sdk/installation",
-              "sdk/client",
-              "sdk/portal",
-              "sdk/brain",
-              "sdk/types"
-            ]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              {
-                "group": "Auth",
-                "pages": [{ "source": "./openapi.json", "section": "Auth" }]
-              },
-              {
-                "group": "Portal",
-                "pages": [{ "source": "./openapi.json", "section": "Portal" }]
-              },
-              {
-                "group": "Brain",
-                "pages": [{ "source": "./openapi.json", "section": "Brain" }]
-              }
-            ]
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              "guides/chat-stream",
-              "guides/media-files"
-            ]
-          }
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "authentication",
+          "errors"
+        ]
+      },
+      {
+        "group": "Platform",
+        "pages": [
+          "platform-model",
+          "scope"
+        ]
+      },
+      {
+        "group": "Client SDK",
+        "pages": [
+          "sdk/installation",
+          "sdk/client",
+          "sdk/portal",
+          "sdk/brain",
+          "sdk/types"
+        ]
+      },
+      {
+        "group": "API Reference — Auth",
+        "pages": [{ "source": "./openapi.json", "section": "Auth" }]
+      },
+      {
+        "group": "API Reference — Portal",
+        "pages": [{ "source": "./openapi.json", "section": "Portal" }]
+      },
+      {
+        "group": "API Reference — Brain",
+        "pages": [{ "source": "./openapi.json", "section": "Brain" }]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/chat-stream",
+          "guides/media-files"
         ]
       }
     ]
