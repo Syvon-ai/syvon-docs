@@ -43,42 +43,42 @@
       },
       {
         "group": "API Reference — Auth",
-        "pages": ["POST /api/auth/api-token"]
+        "pages": ["openapi.json POST /api/auth/api-token"]
       },
       {
         "group": "API Reference — Portal",
         "pages": [
-          "GET /api/user/account",
-          "GET /api/workspaces",
-          "POST /api/workspaces",
-          "GET /api/workspaces/{id}",
-          "PATCH /api/workspaces/{id}",
-          "DELETE /api/workspaces/{id}",
-          "POST /api/workspaces/{id}/activate",
-          "GET /api/workspaces/{id}/members",
-          "GET /api/workspaces/{id}/brands",
-          "GET /api/workspaces/{id}/keys",
-          "POST /api/workspaces/{id}/keys",
-          "DELETE /api/workspaces/{id}/keys/{keyId}",
-          "GET /api/credits/balance",
-          "GET /api/credits/history",
-          "GET /api/workspaces/{id}/flows",
-          "GET /api/workspaces/{id}/files"
+          "openapi.json GET /api/user/account",
+          "openapi.json GET /api/workspaces",
+          "openapi.json POST /api/workspaces",
+          "openapi.json GET /api/workspaces/{id}",
+          "openapi.json PATCH /api/workspaces/{id}",
+          "openapi.json DELETE /api/workspaces/{id}",
+          "openapi.json POST /api/workspaces/{id}/activate",
+          "openapi.json GET /api/workspaces/{id}/members",
+          "openapi.json GET /api/workspaces/{id}/brands",
+          "openapi.json GET /api/workspaces/{id}/keys",
+          "openapi.json POST /api/workspaces/{id}/keys",
+          "openapi.json DELETE /api/workspaces/{id}/keys/{keyId}",
+          "openapi.json GET /api/credits/balance",
+          "openapi.json GET /api/credits/history",
+          "openapi.json GET /api/workspaces/{id}/flows",
+          "openapi.json GET /api/workspaces/{id}/files"
         ]
       },
       {
         "group": "API Reference — Brain",
         "pages": [
-          "GET /v1/agent/_whoami",
-          "GET /v1/agent/{agentId}",
-          "GET /v1/agent/{agentId}/wrap",
-          "GET /v1/agent/{agentId}/site",
-          "GET /v1/agent/{agentId}/files",
-          "GET /v1/agent/{agentId}/items",
-          "GET /v1/agent/{agentId}/suggestions",
-          "GET /v1/agent/{agentId}/feed",
-          "GET /v1/r2/{path}",
-          "POST /v1/agent/{agentId}/chat"
+          "openapi.json GET /v1/agent/_whoami",
+          "openapi.json GET /v1/agent/{agentId}",
+          "openapi.json GET /v1/agent/{agentId}/wrap",
+          "openapi.json GET /v1/agent/{agentId}/site",
+          "openapi.json GET /v1/agent/{agentId}/files",
+          "openapi.json GET /v1/agent/{agentId}/items",
+          "openapi.json GET /v1/agent/{agentId}/suggestions",
+          "openapi.json GET /v1/agent/{agentId}/feed",
+          "openapi.json GET /v1/r2/{path}",
+          "openapi.json POST /v1/agent/{agentId}/chat"
         ]
       },
       {

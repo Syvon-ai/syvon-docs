@@ -347,7 +347,7 @@ const routes = [
   {
     tag: 'Portal', method: 'get', path: '/api/credits/balance', servers: [PORTAL],
     operationId: 'getCreditBalance',
-    summary: "The caller's credit balance (1 credit = $0.0001)",
+    summary: "The caller's credit balance",
     security: JWT,
     responses: { 200: json('Balance', ref('CreditBalance')) },
   },

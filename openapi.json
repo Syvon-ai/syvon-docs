@@ -683,7 +683,7 @@
         "tags": [
           "Portal"
         ],
-        "summary": "The caller's credit balance (1 credit = $0.0001)",
+        "summary": "The caller's credit balance",
         "description": "",
         "operationId": "getCreditBalance",
         "responses": {
