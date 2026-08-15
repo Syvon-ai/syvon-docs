@@ -9,6 +9,10 @@
     "dark": "#C2410C"
   },
   "favicon": "/favicon.svg",
+  "api": {
+    "openapi": "./openapi.json",
+    "maintainOrder": true
+  },
   "navigation": {
     "pages": [
       {
@@ -39,15 +43,43 @@
       },
       {
         "group": "API Reference — Auth",
-        "pages": [{ "source": "./openapi.json", "section": "Auth" }]
+        "pages": ["openapi/mintPortalToken"]
       },
       {
         "group": "API Reference — Portal",
-        "pages": [{ "source": "./openapi.json", "section": "Portal" }]
+        "pages": [
+          "openapi/getAccount",
+          "openapi/listWorkspaces",
+          "openapi/createWorkspace",
+          "openapi/getWorkspace",
+          "openapi/updateWorkspace",
+          "openapi/deleteWorkspace",
+          "openapi/activateWorkspace",
+          "openapi/listMembers",
+          "openapi/listBrands",
+          "openapi/listApiKeys",
+          "openapi/mintApiKey",
+          "openapi/revokeApiKey",
+          "openapi/getCreditBalance",
+          "openapi/getCreditHistory",
+          "openapi/listFlows",
+          "openapi/listFiles"
+        ]
       },
       {
         "group": "API Reference — Brain",
-        "pages": [{ "source": "./openapi.json", "section": "Brain" }]
+        "pages": [
+          "openapi/whoami",
+          "openapi/getAgent",
+          "openapi/getWrapConfig",
+          "openapi/getSiteConfig",
+          "openapi/getAgentFiles",
+          "openapi/getItems",
+          "openapi/getSuggestions",
+          "openapi/getFeed",
+          "openapi/streamR2File",
+          "openapi/chat"
+        ]
       },
       {
         "group": "Guides",
