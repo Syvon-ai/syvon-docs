@@ -1,0 +1,74 @@
+---
+title: Workspace Structure
+description: The anatomy of a Syvon workspace — the folder tree on object storage, what each folder holds, file conventions, and which keys the brain read plane will serve.
+---
+
+A workspace is a tree of objects under a single storage prefix: `workspaces/{workspaceId}/`. **One workspace, one brand.** Everything the platform knows about a brand lives in this tree, and everything you read through the [brain surface](/sdk/brain) is a file in it.
+
+```
+workspaces/{workspaceId}/
+├── config/                  machine DNA — the brand as data
+│   ├── brand.json           identity, voice config, visual summary
+│   ├── design-tokens.json   colors + typography tokens
+│   ├── text-styles.json     the typographic scale
+│   ├── animation.json       motion presets
+│   └── …                    commerce, visuals, skills, world state
+├── meta/                    the prose brain (human-authored markdown)
+│   ├── voice.md             how the brand speaks
+│   ├── strategy.md          positioning and goals
+│   └── …                    target profile, patterns, learnings
+├── assets/                  the brand kit — curated fonts, imagery,
+│   └── uploads/             logos, product shots; plus the uploads inbox
+├── wrapper/                 the public site surface
+│   ├── site.json            nav, pages, domains, chat config
+│   └── pages/               site article content
+├── projects/{slug}/         ONE folder per agent (project) — all its content
+│   ├── *.dsgn               designs (single-visual layouts)
+│   ├── *.comp               compositions (sequences, decks, carousels)
+│   ├── *.react              animated components
+│   ├── *.comp.poster.jpg    a comp's poster frame (baked still)
+│   ├── output/              published renders — the feed reads THIS folder
+│   └── .context.jsonl       the agent's own memory sidecar (append-only)
+└── workflows/{slug}/        generation pipelines — flow definitions,
+                             exemplars, and their config
+```
+
+## What each folder means for a client
+
+You never write to this tree from a client. You read it, through two lenses:
+
+- **The portal file index** (`portal.listFiles`) returns every key in the workspace, workspace-relative.
+- **The brain surfaces** return the keys that matter for rendering a published agent: feed covers and posters, item media, and the frozen file index.
+
+### `projects/{slug}/output/` is the feed
+
+Published content lives in the project's `output/` folder. A feed post's `key`, `poster`, and `playable` all point at files under `projects/{slug}/output/`. This is the folder to watch if you are syncing media to your own storage.
+
+### Posters and playables
+
+Every `.comp` gets a baked `.comp.poster.jpg` still. Video-producing comps additionally get a transcoded `.mp4` in `output/`, which the feed surfaces as `playable`. If `playable` is empty, only the poster exists.
+
+### Brand data clients can use
+
+`config/design-tokens.json` and `config/brand.json` are readable through the R2 proxy and are the cheapest way to theme your own UI in the brand's palette and typography — the same tokens the platform's own renders use.
+
+## Key scoping, restated
+
+| Where you got the key | Its scope |
+|---|---|
+| Portal file index | workspace-relative: `projects/{slug}/output/reel.mp4` |
+| Brain feed / items | agent-scoped: relative to the project's storage prefix |
+
+Stream either through `brain.streamR2File`, which takes a workspace-relative key.
+
+## What the R2 proxy will serve
+
+Only allowlisted prefixes are reachable through the brain's R2 endpoint; anything else returns `403`:
+
+`projects/`, `workflows/`, `assets/`, `config/`, `meta/`, `wrapper/`, `knowledge/`, `import/`, `.meta/`
+
+That set covers everything an integrator needs. The platform's internal machinery (databases, secrets, service-to-service planes) is not in this tree and not reachable from the client API at all — see [Scope](/scope).
+
+## Writing to the tree
+
+Clients never write. Content enters the tree through the platform itself: agents generate, publishing freezes a release, and the `ws` CLI (used by the workspace owner and authorized tooling) syncs a local checkout. The supported client path for new content is: run it through an agent on the platform, then read it back from the feed — see [Scope](/scope).

@@ -102,10 +102,10 @@ Keys on this surface are **agent-scoped** (relative to the project's storage pre
 
 `GET /v1/r2/:path` — stream a raw workspace R2 object as a fetch `Response`. Pipe `response.body`; do not buffer large objects in memory.
 
-Only allowlisted prefixes are reachable (`brands/`, `projects/`, `workflows/`, ...); others return `403`. The key is **workspace-relative**.
+Only allowlisted prefixes are reachable (`projects/`, `workflows/`, `config/`, `assets/`, `meta/`, `wrapper/`, ...); others return `403`. The key is **workspace-relative**.
 
 ```ts
-const res = await brain.streamR2File('brands/acme/design-tokens.json');
+const res = await brain.streamR2File('config/design-tokens.json');
 const tokens = JSON.parse(await res.text());
 ```
 

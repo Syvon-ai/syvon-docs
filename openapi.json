@@ -1278,14 +1278,14 @@
           "Brain"
         ],
         "summary": "Stream a raw workspace R2 object",
-        "description": "Workspace-relative key. Only allowlisted prefixes (brands/, projects/, workflows/, …) are reachable; others 403. Pipe the body; do not buffer large objects.",
+        "description": "Workspace-relative key. Only allowlisted prefixes (projects/, workflows/, config/, assets/, meta/, wrapper/, …) are reachable; others 403. Pipe the body; do not buffer large objects.",
         "operationId": "streamR2File",
         "parameters": [
           {
             "name": "path",
             "in": "path",
             "required": true,
-            "description": "Workspace-relative R2 key, e.g. brands/acme/design-tokens.json",
+            "description": "Workspace-relative R2 key, e.g. config/design-tokens.json",
             "schema": {
               "type": "string"
             }

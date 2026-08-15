@@ -456,9 +456,9 @@ const routes = [
     tag: 'Brain', method: 'get', path: '/v1/r2/{path}', servers: [BRAIN],
     operationId: 'streamR2File',
     summary: 'Stream a raw workspace R2 object',
-    description: 'Workspace-relative key. Only allowlisted prefixes (brands/, projects/, workflows/, …) are reachable; others 403. Pipe the body; do not buffer large objects.',
+    description: 'Workspace-relative key. Only allowlisted prefixes (projects/, workflows/, config/, assets/, meta/, wrapper/, …) are reachable; others 403. Pipe the body; do not buffer large objects.',
     security: WSKEY,
-    params: [param('path', 'path', 'Workspace-relative R2 key, e.g. brands/acme/design-tokens.json')],
+    params: [param('path', 'path', 'Workspace-relative R2 key, e.g. config/design-tokens.json')],
     responses: {
       200: { description: 'The raw object bytes', content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } },
       403: err('Prefix not allowlisted'),

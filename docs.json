@@ -28,6 +28,7 @@
         "group": "Platform",
         "pages": [
           "platform-model",
+          "workspace-structure",
           "scope"
         ]
       },
