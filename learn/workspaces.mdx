@@ -1,0 +1,47 @@
+---
+title: Workspaces
+description: The workspace is the top-level container — one business, everything in one place.
+---
+
+# Workspaces
+
+A **workspace** is the container for one business (or one client, if you run
+an agency). Everything Syvon knows — brands, agents, content, members,
+billing — lives inside a workspace and never leaks across them.
+
+```text
+workspace
+├── brands        the look + voice (there can be several)
+├── agents        the content-makers (one per job)
+├── projects      each agent's working set: drafts, renders, published files
+├── members       the people you invite
+└── settings      keys, autopilots, billing
+```
+
+## One user, one active workspace
+
+Your account has one **active workspace** at a time. Switching workspaces
+switches everything you see — the agents, the feed, the settings. If you work
+for two businesses, you want two workspaces, not two agents in one.
+
+## What lives per-workspace
+
+- **Brands** — every agent in the workspace can use any of them; a brand
+  styles everything it touches (see [Brands](/brands)).
+- **Agents and their projects** — the makers and their output (see
+  [Agents](/agents)).
+- **Members and roles** — invite teammates; access is membership, nothing
+  else.
+- **API keys** — workspace keys (`sk_ws_…`) grant programmatic access scoped
+  to that workspace (see [docs.syvon.ai](https://docs.syvon.ai/scope)).
+- **The wrapper site** — the public site a workspace can have, fed by its
+  published content (see [Your wrapper site](/tutorials/your-wrapper-site)).
+
+## Rules of thumb
+
+- **Per business or per client**, never per project — projects belong to
+  agents inside the workspace.
+- Content is published *from* a workspace's projects *to* its feed; there is
+  no cross-workspace publishing.
+- If a brand is radically different from your others and you don't want it
+  near them, that is a workspace decision, not a brand decision.

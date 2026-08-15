@@ -1,0 +1,56 @@
+---
+title: Publishing
+description: From rendered file to public — the feed, the sidecar gate, channels, and your wrapper site.
+---
+
+# Publishing
+
+Nothing in Syvon is public until you publish it. A rendered piece is a file in
+your project; publishing is the act that puts it in front of people.
+
+## The feed is the pipeline
+
+Each agent's project has an **output** folder, and the **feed** is what that
+folder looks like from the outside. But not everything in the folder is
+published — the gate is a small sidecar record next to each file that names
+its **channels**:
+
+```text
+project/output/
+├── teaser.mp4        ← the render
+└── teaser.json       ← the sidecar: channels = [] means private
+```
+
+- Sidecar with channels → **published** to those channels.
+- No sidecar (or empty channels) → the file stays private.
+
+This is why "duplicate cards" or "why is this visible" questions are almost
+always answered by looking at the sidecar, not the video.
+
+## Channels
+
+A published piece can go to:
+
+- **Your wrapper site** — the feed page and the agent's own public surface
+  (see [Your wrapper site](/tutorials/your-wrapper-site))
+- **Social surfaces** — the channels you've connected per piece (post, reel,
+  story, carousel, each with its native shape)
+
+Publishing sets the shape per channel — a 9:16 piece publishes as a reel, a
+group of stills as a carousel. One render can be several cards.
+
+## The usual rhythm
+
+1. **Generate + iterate** in chat (private).
+2. **Render** — still private, now a real file.
+3. **Review the render** — watch it end to end, once.
+4. **Publish** — set channels, write the caption, done. Publishing is free
+   and reversible: unpublish removes the piece from the feed without deleting
+   the file.
+
+## After publishing
+
+- **Unpublishing** hides a piece; deleting the file removes it for good.
+- **Captions and tags** live on the published card, editable later.
+- The wrapper site picks up published pieces automatically — there is no
+  separate "publish to site" step.

@@ -1,0 +1,51 @@
+---
+title: Flows
+description: A flow is the recipe an agent follows — medium, voice, captions, pacing — with defaults you can steer.
+---
+
+# Flows
+
+A **flow** is the recipe an agent follows when it makes a piece: the shape of
+the output, the narration, the pacing, the captions. Every agent is rigged to
+one, and the flow's settings are the dials you reach for when "the same
+brief, but different" is the problem.
+
+## The dials
+
+| Setting | What it decides |
+|---|---|
+| **Medium** | Motion (video/reel) or still (single-frame post) |
+| **Format** | Aspect ratio — 16:9, 9:16, 1:1, 4:5 |
+| **Voice** | Whether pieces are narrated, and with which voice |
+| **Captions** | Subtitles on/off, where they sit, how they're typeset |
+| **Music** | Background music on/off |
+| **Pacing** | How fast shots cut — snappy or relaxed |
+
+## Defaults, not laws
+
+Flow settings are **defaults**. A single generation can override any of them —
+ask for "a 9:16 version, no music" in the brief and that generation comes out
+that way, without touching the flow. The flow is just what happens when you
+don't say.
+
+This layering is deliberate:
+
+```text
+brand voice          ← who you are (never per-piece)
+flow settings        ← how this agent works (rarely per-piece)
+the brief            ← this piece (always)
+```
+
+Change the brand when the identity changed. Change the flow when the agent's
+output is systematically wrong. Change the brief when it's just this piece.
+
+## Templates and examples
+
+Some flows ship with **examples** — finished pieces the agent has been taught
+from, and can start new work from. When an agent's output has a particular
+feel you love, that feel usually lives in its flow's examples.
+
+## Related
+
+- [Agents](/agents) — what a flow is attached to
+- [Make a video](/tutorials/make-a-video) — feeling the dials in practice

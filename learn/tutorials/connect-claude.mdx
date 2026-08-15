@@ -1,0 +1,58 @@
+---
+title: Connect Claude
+description: Use Syvon from inside Claude — the MCP connector, what it can do, and its limits.
+---
+
+# Connect Claude
+
+Syvon ships an **MCP connector**: a bridge that lets Claude (claude.ai,
+Claude Code, or any MCP-capable client) use your Syvon workspace directly.
+You chat with Claude; Claude generates, renders, and manages content in your
+workspace on your behalf.
+
+## What it looks like
+
+Once connected, Claude can, inside one conversation:
+
+- Look at your workspaces, brands, and agents
+- Generate content from a brief you give *it*
+- Render compositions to video
+- Show you the results — stills, videos, PDFs — inline
+- Hand files back to you as download links
+
+It's the same Syvon, doing the same work, driven from a chat you already live
+in.
+
+## Connecting
+
+1. From your Syvon workspace settings, open the connector setup.
+2. Approve the consent screen — it shows exactly which workspaces Claude will
+   see (all the ones your account can access; there is no per-workspace
+   picker).
+3. In Claude, the Syvon tools appear; you can ask for them by name or just
+   describe what you want.
+
+## The session model
+
+The connector is **stateless** — Claude's conversation maps to a project in
+your workspace. Two practical consequences:
+
+- Starting a new chat starts a new working set. Long-running work stays in
+  the chat that made it.
+- The same account connecting from two clients is still one user; there's one
+  workspace active at a time.
+
+## Good fits, honest limits
+
+**Good:** iterating with Claude as the driver ("try three headlines, render
+the best"), batch work ("a post per product in this list"), reviewing
+published content ("what's live on our feed right now?").
+
+**Know that:** large files never reach Claude as raw bytes — you'll get a
+download link or an inline preview, not a base64 dump. And rendering still
+takes its minutes; Claude waits, or you move on and come back.
+
+## Related
+
+- [Quick tour](/quick-tour) — the surfaces, including this one
+- [docs.syvon.ai](https://docs.syvon.ai) — the API the connector sits on

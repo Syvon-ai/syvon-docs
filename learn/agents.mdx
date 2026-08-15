@@ -1,0 +1,51 @@
+---
+title: Agents
+description: An agent is a configured content-maker — one job, one brand, its own project and chat.
+---
+
+# Agents
+
+An **agent** is a configured content-maker. It has a name, a job, a brand,
+and a flow — and its own chat and working set. When you "talk to Syvon", you
+are always talking to a specific agent.
+
+```text
+agent
+├── identity    name, what it's for, which brand it wears
+├── flow        how it makes things (see Flows)
+├── chat        the conversation where you direct it
+└── project     its files: drafts, renders, published output
+```
+
+## One agent per job
+
+The useful unit of separation is the *job*, not the format:
+
+- "Launch teasers" — one agent, punchy short video
+- "The weekly digest" — another agent, calmer, longer
+- "Product one-pagers" — another, document-shaped
+
+Because each agent keeps its own conversation and project history, a
+well-scoped agent gets better at its job over time — and a do-everything
+agent just gets muddy.
+
+## Agents are public or private
+
+An agent stays internal until you **publish** it. A published agent gets its
+own public surface — the wrapper page where people can meet it, read its
+feed, and (if you allow) chat with it. Publishing is the same act that puts
+its content on your site (see [Publishing](/publishing)).
+
+## Directing an agent
+
+Everything is the conversation:
+
+- **Briefs** — "make a 15s teaser for X" starts a piece.
+- **Corrections** — "swap the second shot for a product close-up" changes it.
+- **Standing instructions** — things you say repeatedly belong in the agent's
+  setup, not in every brief.
+
+## Related
+
+- [Create an agent](/tutorials/create-an-agent) — the hands-on version
+- [Flows](/flows) — the "how it makes things" half
