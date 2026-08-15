@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Syvon",
-  "description": "The Syvon platform API — manage workspaces, brands, and credits on the portal surface; read published agents, feeds, media, and run chat on the brain surface. Typed client SDK for @syvon/sdk.",
+  "description": "The Syvon documentation — learn the product (concepts, tutorials, publishing) and build on the platform (API reference, SDK, workspace structure). One doc: learn first, reference below.",
   "theme": "mint",
   "colors": {
     "primary": "#FD5E40",
@@ -16,7 +16,38 @@
   "navigation": {
     "pages": [
       {
-        "group": "Get Started",
+        "group": "Start Here",
+        "pages": [
+          "learn/welcome",
+          "learn/quick-tour",
+          "learn/first-content"
+        ]
+      },
+      {
+        "group": "Concepts",
+        "pages": [
+          "learn/how-it-works",
+          "learn/workspaces",
+          "learn/brands",
+          "learn/agents",
+          "learn/flows",
+          "learn/credits",
+          "learn/publishing"
+        ]
+      },
+      {
+        "group": "Tutorials",
+        "pages": [
+          "learn/tutorials/create-an-agent",
+          "learn/tutorials/set-up-your-brand",
+          "learn/tutorials/make-a-video",
+          "learn/tutorials/publish-to-your-feed",
+          "learn/tutorials/your-wrapper-site",
+          "learn/tutorials/connect-claude"
+        ]
+      },
+      {
+        "group": "Get Started (API)",
         "pages": [
           "introduction",
           "quickstart",
@@ -87,6 +118,12 @@
         "pages": [
           "guides/chat-stream",
           "guides/media-files"
+        ]
+      },
+      {
+        "group": "More",
+        "pages": [
+          "learn/glossary"
         ]
       }
     ]
